@@ -28,6 +28,17 @@ class ContactCheckYourAnswersService {
       email <- userAnswers.get(ContactEmailPage(contactType))
     } yield ContactInfo(name, email)
 
+  def getContactsForCheckYourAnswers(userAnswers: UserAnswers): Option[ContactsCheckYourAnswers] =
+    for {
+      firstContact        <- getContactInfo(userAnswers, First)
+      contactHaveAddedAll <- userAnswers.get(ContactHaveYouAddedAllPage(First))
+      secondContact = contactHaveAddedAll match {
+        case ContactHaveYouAddedAll.Yes => None
+        case ContactHaveYouAddedAll.No  => getContactInfo(userAnswers, Second)
+      }
+      if contactHaveAddedAll != ContactHaveYouAddedAll.No || secondContact.isDefined
+    } yield ContactsCheckYourAnswers(firstContact, secondContact, contactHaveAddedAll)
+
   def getContacts(userAnswers: UserAnswers): List[ContactInfo] =
     List(
       getContactInfo(userAnswers = userAnswers, contactType = First),

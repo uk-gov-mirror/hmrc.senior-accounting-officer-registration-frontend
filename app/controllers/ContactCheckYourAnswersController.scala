@@ -17,11 +17,9 @@
 package controllers
 
 import controllers.actions.*
-import forms.ContactCheckYourAnswersFormProvider
-import models.{ContactInfo, ContactType, NormalMode}
+import models.{ContactsCheckYourAnswers, NormalMode}
 import navigation.Navigator
 import pages.ContactCheckYourAnswersPage
-import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.ContactCheckYourAnswersService
@@ -37,7 +35,6 @@ class ContactCheckYourAnswersController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    formProvider: ContactCheckYourAnswersFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: ContactCheckYourAnswersView,
     service: ContactCheckYourAnswersService,
@@ -46,18 +43,16 @@ class ContactCheckYourAnswersController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
-  val form: Form[ContactInfo] = formProvider()
-
-  def onPageLoad(contactType: ContactType): Action[AnyContent] = (identify andThen getData andThen requireData) {
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData) {
     implicit request =>
-      service.getContactInfo(request.userAnswers, contactType) match {
-        case Some(answers) => Ok(view(answers, contactType))
+      service.getContactsForCheckYourAnswers(request.userAnswers) match {
+        case Some(answers) => Ok(view(answers))
         case None          => Redirect(routes.JourneyRecoveryController.onPageLoad())
       }
   }
 
-  def saveAndContinue(contactType: ContactType): Action[AnyContent] =
+  def saveAndContinue(): Action[AnyContent] =
     (identify andThen getData andThen requireData) { implicit request =>
-      Redirect(navigator.nextPage(ContactCheckYourAnswersPage(contactType), NormalMode, request.userAnswers))
+      Redirect(navigator.nextPage(ContactCheckYourAnswersPage, NormalMode, request.userAnswers))
     }
 }

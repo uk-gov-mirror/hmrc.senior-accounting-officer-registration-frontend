@@ -30,19 +30,13 @@ class Navigator @Inject() () {
   private val normalRoutes: Page => UserAnswers => Call = {
     case NominatedCompanyDetailsGuidancePage => _ => routes.GrsController.start()
     case ContactNamePage(contactType)        => _ => routes.ContactEmailController.onPageLoad(contactType, NormalMode)
-    case ContactEmailPage(contactType)       => _ => routes.ContactCheckYourAnswersController.onPageLoad(contactType)
-    case ContactCheckYourAnswersPage(contactType) =>
-      _ =>
-        contactType match {
-          case First =>
-            routes.ContactHaveYouAddedAllController.onPageLoad(First)
-          case Second =>
-            routes.IndexController.onPageLoad()
-        }
+    case ContactEmailPage(First)             => _ => routes.ContactHaveYouAddedAllController.onPageLoad(First, NormalMode)
+    case ContactEmailPage(Second)            => _ => routes.ContactCheckYourAnswersController.onPageLoad()
+    case ContactCheckYourAnswersPage         => _ => routes.IndexController.onPageLoad()
     case ContactHaveYouAddedAllPage(First) =>
       userAnswers =>
         if userAnswers.get(ContactHaveYouAddedAllPage(First)).contains(ContactHaveYouAddedAll.Yes) then {
-          routes.IndexController.onPageLoad()
+          routes.ContactCheckYourAnswersController.onPageLoad()
         } else {
           routes.ContactNameController.onPageLoad(
             Second,
@@ -57,16 +51,20 @@ class Navigator @Inject() () {
 
   private val checkRouteMap: Page => UserAnswers => Call = {
     case ContactNamePage(contactType) =>
-      _ =>
-        contactType match {
-          case First  => routes.ContactCheckYourAnswersController.onPageLoad(First)
-          case Second => routes.ContactCheckYourAnswersController.onPageLoad(Second)
-        }
+      _ => routes.ContactCheckYourAnswersController.onPageLoad()
     case ContactEmailPage(contactType) =>
-      _ =>
-        contactType match {
-          case First  => routes.ContactCheckYourAnswersController.onPageLoad(First)
-          case Second => routes.ContactCheckYourAnswersController.onPageLoad(Second)
+      _ => routes.ContactCheckYourAnswersController.onPageLoad()
+    case ContactHaveYouAddedAllPage(First) =>
+      userAnswers =>
+        userAnswers.get(ContactHaveYouAddedAllPage(First)) match {
+          case Some(ContactHaveYouAddedAll.Yes) => routes.ContactCheckYourAnswersController.onPageLoad()
+          case Some(ContactHaveYouAddedAll.No) if userAnswers.get(ContactNamePage(Second)).isDefined &&
+              userAnswers.get(ContactEmailPage(Second)).isDefined =>
+            routes.ContactCheckYourAnswersController.onPageLoad()
+          case Some(ContactHaveYouAddedAll.No) =>
+            routes.ContactNameController.onPageLoad(Second, NormalMode)
+          case _ =>
+            routes.IndexController.onPageLoad()
         }
     case _ => _ => routes.IndexController.onPageLoad()
   }

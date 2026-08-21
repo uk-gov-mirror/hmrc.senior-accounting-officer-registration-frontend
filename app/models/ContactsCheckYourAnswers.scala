@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
-package pages
+package models
 
-case object ContactCheckYourAnswersPage extends Page
+final case class ContactsCheckYourAnswers(
+    firstContact: ContactInfo,
+    secondContact: Option[ContactInfo],
+    contactHaveYouAddedAll: ContactHaveYouAddedAll
+)

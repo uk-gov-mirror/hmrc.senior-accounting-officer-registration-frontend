@@ -22,18 +22,27 @@
   govukSummaryList: GovukSummaryList
 )
 
-@(contact: ContactInfo, contactType: ContactType)(using request: Request[?], messages: Messages)
+@(contacts: ContactsCheckYourAnswers)(using request: Request[?], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages(s"contactCheckYourAnswers.title.${contactType.messageKey}"))) {
+@layout(pageTitle = titleNoForm(messages("contactCheckYourAnswers.title"))) {
 
-    <span class="govuk-caption-l">@messages(s"contactCheckYourAnswers.title.${contactType.messageKey}")</span>
+    <span class="govuk-caption-l">@messages("contactCheckYourAnswers.caption")</span>
     <h1 class="govuk-heading-l">@messages("contactCheckYourAnswers.heading")</h1>
-    @formHelper(action = routes.ContactCheckYourAnswersController.saveAndContinue(contactType)) {
+    @formHelper(action = routes.ContactCheckYourAnswersController.saveAndContinue()) {
 
-        @govukSummaryList(SummaryListViewModel(rows = Seq(
-            ContactNameSummary.row(contactType, contact.name),
-            ContactEmailSummary.row(contactType, contact.email),
-        )))
+        @govukSummaryList(SummaryListViewModel(rows =
+            Seq(
+                ContactNameSummary.row(ContactType.First, contacts.firstContact.name),
+                ContactEmailSummary.row(ContactType.First, contacts.firstContact.email)
+            ) ++ contacts.secondContact.fold(Seq.empty)(contact =>
+                Seq(
+                    ContactNameSummary.row(ContactType.Second, contact.name),
+                    ContactEmailSummary.row(ContactType.Second, contact.email)
+                )
+            ) ++ Seq(
+                ContactHaveYouAddedAllSummary.row(contacts.contactHaveYouAddedAll)
+            )
+        ))
 
         @govukButton(
             ButtonViewModel(messages("contactCheckYourAnswers.continue").toText).withAttribute("id", "submit")

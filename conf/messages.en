@@ -109,10 +109,10 @@ contactHaveYouAddedAll.yes = Yes
 contactHaveYouAddedAll.no = No, add another contact
 contactHaveYouAddedAll.checkYourAnswersLabel = Have you added all the contacts you need?
 contactHaveYouAddedAll.error.required = Select contactHaveYouAddedAll
-contactHaveYouAddedAll.change.hidden = ContactHaveYouAddedAll
+contactHaveYouAddedAll.change.hidden = whether you have added all the contacts you need
 
-contactCheckYourAnswers.title.first  = First contact details
-contactCheckYourAnswers.title.second = Second contact details
+contactCheckYourAnswers.title = Contact details
+contactCheckYourAnswers.caption = Contact details
 contactCheckYourAnswers.heading = Check your answers
 contactCheckYourAnswers.continue = Continue
 

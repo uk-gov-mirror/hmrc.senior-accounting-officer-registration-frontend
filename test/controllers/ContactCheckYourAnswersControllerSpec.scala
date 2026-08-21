@@ -17,8 +17,7 @@
 package controllers
 
 import base.SpecBase
-import models.ContactType.{First, Second}
-import models.{ContactInfo, ContactType, UserAnswers}
+import models.{ContactHaveYouAddedAll, ContactInfo, ContactsCheckYourAnswers, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.eq as meq
 import org.mockito.Mockito.*
@@ -35,6 +34,11 @@ import views.html.ContactCheckYourAnswersView
 class ContactCheckYourAnswersControllerSpec extends SpecBase with MockitoSugar {
   def onwardRoute: Call            = Call("GET", "/foo")
   val testUserAnswers: UserAnswers = emptyUserAnswers
+  val testContacts: ContactsCheckYourAnswers = ContactsCheckYourAnswers(
+    firstContact = ContactInfo("name1", "email1"),
+    secondContact = Some(ContactInfo("name2", "email2")),
+    contactHaveYouAddedAll = ContactHaveYouAddedAll.No
+  )
 
   override protected def applicationBuilder(userAnswers: Option[UserAnswers] = None): GuiceApplicationBuilder =
     super
@@ -45,134 +49,65 @@ class ContactCheckYourAnswersControllerSpec extends SpecBase with MockitoSugar {
       )
 
   "ContactCheckYourAnswers Controller" - {
-    "when ContactType is First" - {
-      "onPageLoad endpoint:" - {
-        "must return OK and the correct view for a GET" in {
-          val testContactInfo                    = ContactInfo("name", "email")
-          val application                        = applicationBuilder(userAnswers = Some(testUserAnswers)).build()
-          val view                               = application.injector.instanceOf[ContactCheckYourAnswersView]
-          val mockContactCheckYourAnswersService = application.injector.instanceOf[ContactCheckYourAnswersService]
-          when(mockContactCheckYourAnswersService.getContactInfo(meq(testUserAnswers), meq(First)))
-            .thenReturn(Some(testContactInfo))
+    "onPageLoad endpoint:" - {
+      "must return OK and the correct view for a GET" in {
+        val application                        = applicationBuilder(userAnswers = Some(testUserAnswers)).build()
+        val view                               = application.injector.instanceOf[ContactCheckYourAnswersView]
+        val mockContactCheckYourAnswersService = application.injector.instanceOf[ContactCheckYourAnswersService]
+        when(mockContactCheckYourAnswersService.getContactsForCheckYourAnswers(meq(testUserAnswers)))
+          .thenReturn(Some(testContacts))
 
-          running(application) {
-            val request = FakeRequest(GET, routes.ContactCheckYourAnswersController.onPageLoad(First).url)
-            val result  = route(application, request).value
+        running(application) {
+          val request = FakeRequest(GET, routes.ContactCheckYourAnswersController.onPageLoad().url)
+          val result  = route(application, request).value
 
-            status(result) mustEqual OK
-            contentAsString(result) mustEqual view(testContactInfo, First)(using
-              request,
-              messages(application)
-            ).toString
-          }
-        }
-
-        "must redirect to journey recovery when no contacts found" in {
-          val application = applicationBuilder(userAnswers = None).build()
-
-          running(application) {
-            val request = FakeRequest(GET, routes.ContactCheckYourAnswersController.onPageLoad(First).url)
-            val result  = route(application, request).value
-
-            status(result) mustEqual SEE_OTHER
-            redirectLocation(result) mustEqual Some(routes.JourneyRecoveryController.onPageLoad().url)
-          }
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(testContacts)(using
+            request,
+            messages(application)
+          ).toString
         }
       }
 
-      "saveAndContinue endpoint:" - {
-        "must redirect to the next page for a POST" in {
+      "must redirect to journey recovery when no contacts found" in {
+        val application = applicationBuilder(userAnswers = None).build()
 
-          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-            .overrides(bind[Navigator].toInstance(new FakeNavigator(onwardRoute)))
-            .build()
+        running(application) {
+          val request = FakeRequest(GET, routes.ContactCheckYourAnswersController.onPageLoad().url)
+          val result  = route(application, request).value
 
-          running(application) {
-            val request = FakeRequest(POST, routes.ContactCheckYourAnswersController.saveAndContinue(First).url)
-
-            val result = route(application, request).value
-
-            status(result) mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual onwardRoute.url
-          }
-        }
-
-        "must redirect to journey recovery when no contacts found" in {
-          val application = applicationBuilder(userAnswers = None).build()
-
-          running(application) {
-            val request = FakeRequest(POST, routes.ContactCheckYourAnswersController.saveAndContinue(First).url)
-            val result  = route(application, request).value
-
-            status(result) mustEqual SEE_OTHER
-            redirectLocation(result) mustEqual Some(routes.JourneyRecoveryController.onPageLoad().url)
-          }
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result) mustEqual Some(routes.JourneyRecoveryController.onPageLoad().url)
         }
       }
     }
 
-    "when ContactType is Second" - {
-      "onPageLoad endpoint:" - {
-        "must return OK and the correct view for a GET" in {
-          val testContactInfo                    = ContactInfo("name", "email")
-          val application                        = applicationBuilder(userAnswers = Some(testUserAnswers)).build()
-          val view                               = application.injector.instanceOf[ContactCheckYourAnswersView]
-          val mockContactCheckYourAnswersService = application.injector.instanceOf[ContactCheckYourAnswersService]
-          when(mockContactCheckYourAnswersService.getContactInfo(meq(testUserAnswers), meq(Second)))
-            .thenReturn(Some(testContactInfo))
+    "saveAndContinue endpoint:" - {
+      "must redirect to the next page for a POST" in {
 
-          running(application) {
-            val request = FakeRequest(GET, routes.ContactCheckYourAnswersController.onPageLoad(Second).url)
-            val result  = route(application, request).value
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[Navigator].toInstance(new FakeNavigator(onwardRoute)))
+          .build()
 
-            status(result) mustEqual OK
-            contentAsString(result) mustEqual view(testContactInfo, Second)(using
-              request,
-              messages(application)
-            ).toString
-          }
-        }
+        running(application) {
+          val request = FakeRequest(POST, routes.ContactCheckYourAnswersController.saveAndContinue().url)
 
-        "must redirect to journey recovery when no contacts found" in {
-          val application = applicationBuilder(userAnswers = None).build()
+          val result = route(application, request).value
 
-          running(application) {
-            val request = FakeRequest(GET, routes.ContactCheckYourAnswersController.onPageLoad(Second).url)
-            val result  = route(application, request).value
-
-            status(result) mustEqual SEE_OTHER
-            redirectLocation(result) mustEqual Some(routes.JourneyRecoveryController.onPageLoad().url)
-          }
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
         }
       }
 
-      "saveAndContinue endpoint:" - {
-        "must redirect to the next page for a POST" in {
+      "must redirect to journey recovery when no contacts found" in {
+        val application = applicationBuilder(userAnswers = None).build()
 
-          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-            .overrides(bind[Navigator].toInstance(new FakeNavigator(onwardRoute)))
-            .build()
+        running(application) {
+          val request = FakeRequest(POST, routes.ContactCheckYourAnswersController.saveAndContinue().url)
+          val result  = route(application, request).value
 
-          running(application) {
-            val request = FakeRequest(POST, routes.ContactCheckYourAnswersController.saveAndContinue(Second).url)
-
-            val result = route(application, request).value
-
-            status(result) mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual onwardRoute.url
-          }
-        }
-
-        "must redirect to journey recovery when no contacts found" in {
-          val application = applicationBuilder(userAnswers = None).build()
-
-          running(application) {
-            val request = FakeRequest(POST, routes.ContactCheckYourAnswersController.saveAndContinue(Second).url)
-            val result  = route(application, request).value
-
-            status(result) mustEqual SEE_OTHER
-            redirectLocation(result) mustEqual Some(routes.JourneyRecoveryController.onPageLoad().url)
-          }
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result) mustEqual Some(routes.JourneyRecoveryController.onPageLoad().url)
         }
       }
     }

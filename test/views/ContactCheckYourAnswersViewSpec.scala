@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,134 +17,81 @@
 package views
 
 import base.ViewSpecBase
-import models.{ContactInfo, ContactType}
+import models.{ContactHaveYouAddedAll, ContactInfo, ContactsCheckYourAnswers}
 import org.jsoup.Jsoup
-import org.jsoup.nodes.{Document, Element}
-import org.jsoup.select.Elements
+import org.jsoup.nodes.Document
 import org.scalatest.Assertion
 import views.ContactCheckYourAnswersViewSpec.*
 import views.html.ContactCheckYourAnswersView
 
+import scala.jdk.CollectionConverters.*
+
 class ContactCheckYourAnswersViewSpec extends ViewSpecBase[ContactCheckYourAnswersView] {
 
   "ContactCheckYourAnswersView" - {
-    ContactType.values.foreach { contactType =>
-      s"When contact type is $contactType and one contact is saved, must generate a view" - {
-        val contacts      = firstContact
-        val doc: Document = Jsoup.parse(SUT(contacts, contactType).toString)
+    "must generate a view for one contact" in {
+      val doc: Document = Jsoup.parse(SUT(oneContactAnswers).toString)
 
-        doc.createTestsWithStandardPageElements(
-          pageTitle = s"$contactType contact details",
-          pageHeading = pageHeading,
-          showBackLink = true,
-          showIsThisPageNotWorkingProperlyLink = true,
-          hasError = false
-        )
+      doc.title() mustBe s"$pageTitle - Senior Accounting Officer notification and certificate - GOV.UK"
+      doc.getMainContent.getElementsByTag("h1").text() mustBe pageHeading
+      doc.getElementsByClass("govuk-back-link").size() mustBe 1
+      doc.getMainContent.select("a.govuk-link.hmrc-report-technical-issue").text() mustBe
+        "Is this page not working properly? (opens in new tab)"
+      doc.select(".govuk-caption-l").text() mustBe pageTitle
+      validateSummary(doc, expectedRows = List(
+        ("Full name", "name1", "/senior-accounting-officer/registration/contact-details/first/change-name"),
+        ("Email address", "email1", "/senior-accounting-officer/registration/contact-details/first/change-email"),
+        ("Have you added all the contacts you need?", "Yes", "/senior-accounting-officer/registration/contact-details/first/change-add-another")
+      ))
 
-        doc.createTestsWithLargeCaption(
-          caption = s"$contactType contact details"
-        )
-
-        val dl = doc.getMainContent.getElementsByTag("dl")
-
-        "must show correct caption for contact type" in {
-          val caption         = doc.select(".govuk-caption-l")
-          val expectedCaption = s"$contactType contact details"
-
-          withClue("expected one caption:\n") {
-            caption.size() mustBe 1
-          }
-
-          withClue(s"expected caption '$expectedCaption' but found '${caption.text()}'\n") {
-            caption.text() mustBe expectedCaption
-          }
-        }
-
-        "must test value for contact table" in {
-          validateContactDetailsTable(dl, 0, contactType.toString.toLowerCase, contacts)
-        }
-
-        "must show 1 contact table" in {
-          dl.size() mustBe 1
-        }
-
-        doc.createTestsWithSubmissionButton(
-          action = controllers.routes.ContactCheckYourAnswersController.saveAndContinue(contactType),
-          buttonText = submitButtonText
-        )
-
-      }
+      val form = doc.select("form")
+      form.attr("action") mustBe controllers.routes.ContactCheckYourAnswersController.saveAndContinue().url
+      doc.getElementById("submit").text() mustBe submitButtonText
     }
 
-    def validateContactDetailsTable(
-        dl: Elements,
-        tableIndex: Int,
-        contactNumber: String,
-        contactInfo: ContactInfo
-    ): Assertion = {
-      val rows = dl.get(tableIndex).select("div.govuk-summary-list__row")
-      rows.size() mustBe 2
-      validateRow(
-        row = rows.get(0),
-        keyText = "Full name",
-        valueText = contactInfo.name,
-        actionText = "Change",
-        actionHiddenText = "change the full name",
-        actionHref = s"/senior-accounting-officer/registration/contact-details/$contactNumber/change-name"
-      )
+    "must generate a view for two contacts" in {
+      val doc: Document = Jsoup.parse(SUT(twoContactAnswers).toString)
 
-      validateRow(
-        row = rows.get(1),
-        keyText = "Email address",
-        valueText = contactInfo.email,
-        actionText = "Change",
-        actionHiddenText = "change the email address",
-        actionHref = s"/senior-accounting-officer/registration/contact-details/$contactNumber/change-email"
-      )
+      validateSummary(doc, expectedRows = List(
+        ("Full name", "name1", "/senior-accounting-officer/registration/contact-details/first/change-name"),
+        ("Email address", "email1", "/senior-accounting-officer/registration/contact-details/first/change-email"),
+        ("Full name", "name2", "/senior-accounting-officer/registration/contact-details/second/change-name"),
+        ("Email address", "email2", "/senior-accounting-officer/registration/contact-details/second/change-email"),
+        ("Have you added all the contacts you need?", "No, add another contact", "/senior-accounting-officer/registration/contact-details/first/change-add-another")
+      ))
+    }
+  }
 
+  private def validateSummary(doc: Document, expectedRows: List[(String, String, String)]): Assertion = {
+    val rows = doc.getMainContent.select("div.govuk-summary-list__row")
+    rows.size() mustBe expectedRows.size
+
+    rows.asScala.zipWithIndex.foreach { case (row, index) =>
+      val (expectedKey, expectedValue, expectedHref) = expectedRows(index)
+
+      row.select("dt.govuk-summary-list__key").text() mustBe expectedKey
+      row.select("dd.govuk-summary-list__value").text() mustBe expectedValue
+      row.select("dd.govuk-summary-list__actions a").attr("href") mustBe expectedHref
     }
 
-    def validateRow(
-        row: Element,
-        keyText: String,
-        valueText: String,
-        actionText: String,
-        actionHiddenText: String,
-        actionHref: String
-    ): Assertion = {
-      val key = row.select("dt.govuk-summary-list__key")
-      key.size() mustBe 1
-      withClue("row keyText mismatch:\n") {
-        key.get(0).text() mustBe keyText
-      }
-
-      val value = row.select("dd.govuk-summary-list__value")
-      value.size() mustBe 1
-      withClue("row valueText mismatch:\n") {
-        value.get(0).text() mustBe valueText
-      }
-
-      val action = row.select("dd.govuk-summary-list__actions")
-      action.size() mustBe 1
-
-      val linkText = action.get(0).select("a")
-      linkText.size() mustBe 1
-      withClue("row actionHref mismatch:\n") {
-        linkText.get(0).attr("href") mustBe actionHref
-      }
-      withClue("row actionHiddenText mismatch:\n") {
-        linkText.get(0).select("span.govuk-visually-hidden").text() mustBe actionHiddenText
-      }
-      linkText.get(0).select("span.govuk-visually-hidden").remove()
-      withClue("row actionText mismatch:\n") {
-        linkText.get(0).text() mustBe actionText
-      }
-    }
+    succeed
   }
 }
 
 object ContactCheckYourAnswersViewSpec {
-  val pageHeading: String       = "Check your answers"
-  val firstContact: ContactInfo = ContactInfo("name1", "email1")
-  val submitButtonText: String  = "Continue"
+  val pageTitle: String      = "Contact details"
+  val pageHeading: String    = "Check your answers"
+  val submitButtonText: String = "Continue"
+
+  val oneContactAnswers: ContactsCheckYourAnswers = ContactsCheckYourAnswers(
+    firstContact = ContactInfo("name1", "email1"),
+    secondContact = None,
+    contactHaveYouAddedAll = ContactHaveYouAddedAll.Yes
+  )
+
+  val twoContactAnswers: ContactsCheckYourAnswers = ContactsCheckYourAnswers(
+    firstContact = ContactInfo("name1", "email1"),
+    secondContact = Some(ContactInfo("name2", "email2")),
+    contactHaveYouAddedAll = ContactHaveYouAddedAll.No
+  )
 }

@@ -47,17 +47,18 @@ POST        /contact-details/second/email                      controllers.Conta
 GET         /contact-details/second/change-email               controllers.ContactEmailController.onPageLoad(contactType: ContactType = ContactType.Second, mode: Mode = CheckMode)
 POST        /contact-details/second/change-email               controllers.ContactEmailController.onSubmit(contactType: ContactType = ContactType.Second, mode: Mode = CheckMode)
 
-GET         /contact-details/first/add-another                 controllers.ContactHaveYouAddedAllController.onPageLoad(contactType: ContactType = ContactType.First)
-POST        /contact-details/first/add-another                 controllers.ContactHaveYouAddedAllController.onSubmit(contactType: ContactType = ContactType.First)
+GET         /contact-details/first/add-another                 controllers.ContactHaveYouAddedAllController.onPageLoad(contactType: ContactType = ContactType.First, mode: Mode = NormalMode)
+POST        /contact-details/first/add-another                 controllers.ContactHaveYouAddedAllController.onSubmit(contactType: ContactType = ContactType.First, mode: Mode = NormalMode)
+GET         /contact-details/first/change-add-another          controllers.ContactHaveYouAddedAllController.onPageLoad(contactType: ContactType = ContactType.First, mode: Mode = CheckMode)
+POST        /contact-details/first/change-add-another          controllers.ContactHaveYouAddedAllController.onSubmit(contactType: ContactType = ContactType.First, mode: Mode = CheckMode)
 
-GET         /contact-details/second/add-another                controllers.ContactHaveYouAddedAllController.onPageLoad(contactType: ContactType = ContactType.Second)
-POST        /contact-details/second/add-another                controllers.ContactHaveYouAddedAllController.onSubmit(contactType: ContactType = ContactType.Second)
+GET         /contact-details/second/add-another                controllers.ContactHaveYouAddedAllController.onPageLoad(contactType: ContactType = ContactType.Second, mode: Mode = NormalMode)
+POST        /contact-details/second/add-another                controllers.ContactHaveYouAddedAllController.onSubmit(contactType: ContactType = ContactType.Second, mode: Mode = NormalMode)
+GET         /contact-details/second/change-add-another         controllers.ContactHaveYouAddedAllController.onPageLoad(contactType: ContactType = ContactType.Second, mode: Mode = CheckMode)
+POST        /contact-details/second/change-add-another         controllers.ContactHaveYouAddedAllController.onSubmit(contactType: ContactType = ContactType.Second, mode: Mode = CheckMode)
 
-GET         /contact-details/first/check-your-answers                controllers.ContactCheckYourAnswersController.onPageLoad(contactType: ContactType = ContactType.First)
-POST        /contact-details/first/check-your-answers                controllers.ContactCheckYourAnswersController.saveAndContinue(contactType: ContactType = ContactType.First)
-
-GET         /contact-details/second/check-your-answers                controllers.ContactCheckYourAnswersController.onPageLoad(contactType: ContactType = ContactType.Second)
-POST        /contact-details/second/check-your-answers                controllers.ContactCheckYourAnswersController.saveAndContinue(contactType: ContactType = ContactType.Second)
+GET         /contact-details/check-your-answers                controllers.ContactCheckYourAnswersController.onPageLoad()
+POST        /contact-details/check-your-answers                controllers.ContactCheckYourAnswersController.saveAndContinue()
 
 GET        /nominated-company-details-guidance                 controllers.NominatedCompanyDetailsGuidanceController.onPageLoad()
 POST       /nominated-company-details-guidance                 controllers.NominatedCompanyDetailsGuidanceController.onSubmit()

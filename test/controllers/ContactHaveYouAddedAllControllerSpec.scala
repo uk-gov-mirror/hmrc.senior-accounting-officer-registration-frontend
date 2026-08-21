@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.ContactHaveYouAddedAllFormProvider
-import models.{ContactHaveYouAddedAll, ContactType, UserAnswers}
+import models.{ContactHaveYouAddedAll, ContactType, NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -44,7 +44,7 @@ class ContactHaveYouAddedAllControllerSpec extends SpecBase with MockitoSugar {
   "ContactHaveYouAddedAll Controller" - {
     List(ContactType.First, ContactType.Second).foreach { contactType =>
       s"When the ContactType is $contactType" - {
-        lazy val contactHaveYouAddedAllRoute = routes.ContactHaveYouAddedAllController.onPageLoad(contactType).url
+        lazy val contactHaveYouAddedAllRoute = routes.ContactHaveYouAddedAllController.onPageLoad(contactType, NormalMode).url
         "must return OK and the correct view for a GET" in {
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
           running(application) {
@@ -54,7 +54,7 @@ class ContactHaveYouAddedAllControllerSpec extends SpecBase with MockitoSugar {
             val result = route(application, request).value
 
             status(result) mustEqual OK
-            contentAsString(result) mustEqual view(form, contactType)(using request, messages(application)).toString
+            contentAsString(result) mustEqual view(form, contactType, NormalMode)(using request, messages(application)).toString
           }
         }
 
@@ -72,7 +72,7 @@ class ContactHaveYouAddedAllControllerSpec extends SpecBase with MockitoSugar {
             val result = route(application, request).value
 
             status(result) mustEqual OK
-            contentAsString(result) mustEqual view(form.fill(ContactHaveYouAddedAll.values.head), contactType)(using
+            contentAsString(result) mustEqual view(form.fill(ContactHaveYouAddedAll.values.head), contactType, NormalMode)(using
               request,
               messages(application)
             ).toString
@@ -113,7 +113,7 @@ class ContactHaveYouAddedAllControllerSpec extends SpecBase with MockitoSugar {
             val result = route(application, request).value
 
             status(result) mustEqual BAD_REQUEST
-            contentAsString(result) mustEqual view(boundForm, contactType)(using
+            contentAsString(result) mustEqual view(boundForm, contactType, NormalMode)(using
               request,
               messages(application)
             ).toString

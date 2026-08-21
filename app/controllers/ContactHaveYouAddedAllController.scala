@@ -19,7 +19,7 @@ package controllers
 import controllers.actions.*
 import forms.ContactHaveYouAddedAllFormProvider
 import models.ContactHaveYouAddedAll
-import models.{ContactType, NormalMode}
+import models.{ContactType, Mode}
 import navigation.Navigator
 import pages.ContactHaveYouAddedAllPage
 import play.api.data.Form
@@ -49,27 +49,27 @@ class ContactHaveYouAddedAllController @Inject() (
 
   val form: Form[ContactHaveYouAddedAll] = formProvider()
 
-  def onPageLoad(contactType: ContactType): Action[AnyContent] =
+  def onPageLoad(contactType: ContactType, mode: Mode): Action[AnyContent] =
     (identify andThen getData andThen requireData) { implicit request =>
       val preparedForm = request.userAnswers.get(ContactHaveYouAddedAllPage(contactType)) match {
         case None        => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, contactType))
+      Ok(view(preparedForm, contactType, mode))
     }
 
-  def onSubmit(contactType: ContactType): Action[AnyContent] =
+  def onSubmit(contactType: ContactType, mode: Mode): Action[AnyContent] =
     (identify andThen getData andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
-          formWithErrors => Future.successful(BadRequest(view(formWithErrors, contactType))),
+          formWithErrors => Future.successful(BadRequest(view(formWithErrors, contactType, mode))),
           value =>
             for {
               updatedAnswers <- Future.fromTry(request.userAnswers.set(ContactHaveYouAddedAllPage(contactType), value))
               _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(ContactHaveYouAddedAllPage(contactType), NormalMode, updatedAnswers))
+            } yield Redirect(navigator.nextPage(ContactHaveYouAddedAllPage(contactType), mode, updatedAnswers))
         )
     }
 }

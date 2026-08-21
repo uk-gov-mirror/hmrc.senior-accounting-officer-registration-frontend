@@ -106,6 +106,47 @@ class ContactCheckYourAnswersServiceSpec extends SpecBase with GuiceOneAppPerSui
     }
   }
 
+  "ContactCheckYourAnswersService.getContactsForCheckYourAnswers" - {
+    "must return one contact when add another is yes" in {
+      val userAnswers = emptyUserAnswers
+        .updateContact(ContactType.First, "name1", "email1")
+        .updateContactHaveYouAddedAll(Yes)
+        .updateContact(ContactType.Second, "name2", "email2")
+
+      SUT.getContactsForCheckYourAnswers(userAnswers) mustBe Some(
+        ContactsCheckYourAnswers(
+          firstContact = ContactInfo("name1", "email1"),
+          secondContact = None,
+          contactHaveYouAddedAll = Yes
+        )
+      )
+    }
+
+    "must return two contacts when add another is no and both second-contact answers exist" in {
+      val userAnswers = emptyUserAnswers
+        .updateContact(ContactType.First, "name1", "email1")
+        .updateContactHaveYouAddedAll(No)
+        .updateContact(ContactType.Second, "name2", "email2")
+
+      SUT.getContactsForCheckYourAnswers(userAnswers) mustBe Some(
+        ContactsCheckYourAnswers(
+          firstContact = ContactInfo("name1", "email1"),
+          secondContact = Some(ContactInfo("name2", "email2")),
+          contactHaveYouAddedAll = No
+        )
+      )
+    }
+
+    "must return none when add another is no and second-contact answers are incomplete" in {
+      val userAnswers = emptyUserAnswers
+        .updateContact(ContactType.First, "name1", "email1")
+        .updateContactHaveYouAddedAll(No)
+        .updateContact(ContactType.Second, Some("name2"), None)
+
+      SUT.getContactsForCheckYourAnswers(userAnswers) mustBe None
+    }
+  }
+
 }
 
 object ContactCheckYourAnswersServiceSpec {
