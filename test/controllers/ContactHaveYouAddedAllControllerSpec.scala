@@ -16,12 +16,15 @@
 
 package controllers
 
+import _root_.config.FeatureToggleSupport
 import base.SpecBase
 import forms.ContactHaveYouAddedAllFormProvider
 import models.*
+import models.config.FeatureToggle.ContactFlowReshuffle
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.ContactHaveYouAddedAllPage
 import play.api.data.Form
@@ -30,10 +33,7 @@ import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
-import views.html.{ContactHaveYouAddedAllView, ContactHaveYouAddedAllLegacyView}
-import _root_.config.FeatureToggleSupport
-import models.config.FeatureToggle.ContactFlowReshuffle
-import org.scalatest.BeforeAndAfterEach
+import views.html.{ContactHaveYouAddedAllLegacyView, ContactHaveYouAddedAllView}
 
 import scala.concurrent.Future
 

@@ -16,7 +16,7 @@
 
 package pages
 
-import models.{AddAnotherContact, ContactHaveYouAddedAll, ContactType}
+import models.{AddAnotherContact, ContactType}
 import play.api.libs.json.JsPath
 
 case class AddAnotherContactPage(contactType: ContactType) extends QuestionPage[AddAnotherContact] {

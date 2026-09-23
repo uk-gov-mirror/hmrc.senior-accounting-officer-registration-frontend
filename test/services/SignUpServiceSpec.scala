@@ -18,10 +18,10 @@ package services
 
 import base.SpecBase
 import config.FeatureToggleSupport
-import models.config.FeatureToggle.ContactFlowReshuffle
 import connectors.SignUpConnector
 import models.ContactHaveYouAddedAll.{No, Yes}
 import models.ContactType.*
+import models.config.FeatureToggle.ContactFlowReshuffle
 import models.registration.*
 import models.{ContactHaveYouAddedAll, ContactType, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, eq as meq}
